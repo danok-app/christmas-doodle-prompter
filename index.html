@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Christmas Prompt Generator (Doodle + Stickman)</title>
+<title>Christmas Doodle/Stickman Prompt Generator</title>
 <style>
-  :root{ --bg:#f7f7f8; --card:#ffffff; --ink:#1f2328; --muted:#6b7280; }
+  :root{ --bg:#f7f7f8; --card:#ffff; --ink:#1f2328; --muted:#6b7280; }
   body{font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:var(--bg); color:var(--ink); margin:0; padding:24px;}
   .wrap{max-width:1080px; margin:0 auto;}
   .card{background:var(--card); border:1px solid #e5e7eb; border-radius:14px; padding:20px;}
@@ -13,7 +13,9 @@
   .muted{color:var(--muted); font-size:14px; margin:0 0 18px;}
   .row{display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;}
   label{font-size:12px; color:var(--muted); display:block; margin-bottom:6px;}
-  input, select, textarea{width:100%; padding:10px 12px; border:1px solid #e5e7eb; border-radius:10px; font-size:14px; outline:none; background:#fff;}
+  input, select, textarea{
+    width:100%; padding:10px 12px; border:1px solid #e5e7eb; border-radius:10px; font-size:14px; outline:none; background:#fff;
+  }
   textarea{min-height:140px; resize:vertical;}
   .col{flex:1 1 240px;}
   .btn{background:#111827; color:#fff; border:none; padding:10px 14px; border-radius:10px; font-weight:600; cursor:pointer;}
@@ -33,206 +35,651 @@
 <body>
   <div class="wrap">
     <div class="card">
-      <div class="topbar">
-        <div>
-          <label id="lblLang">Language</label>
-          <select id="lang" onchange="switchLang()">
-            <option value="en">English (US)</option>
-            <option value="id">Indonesia</option>
-          </select>
-        </div>
-        <div>
-          <label id="lblIntensity">Motion intensity</label>
-          <div class="slider-wrap">
-            <input id="intensity" type="range" min="0" max="2" step="1" value="0" oninput="updateIntensityLabel(); generate();" />
-            <span id="intensityLabel">Subtle</span>
-          </div>
-        </div>
-        <div>
-          <label id="lblStylePreset">Style preset</label>
-          <select id="stylePreset" onchange="onStylePresetChange()">
-            <option value="doodle" selected>Christmas Doodle</option>
-            <option value="stickman">Stickman (single image)</option>
-          </select>
-        </div>
-        <div>
-          <label id="lblStructure">Structure</label>
-          <select id="structure" onchange="generate()">
-            <option value="single">Single image</option>
-            <option value="grid3x3">3×3 warm beige tile grid</option>
-          </select>
-        </div>
-      </div>
+    <div class="topbar">
+    <div>
+    <label id="lblLang">Language</label>
+    <select id="lang" onchange="switchLang()">
+    <option value="en">English (US)</option>
+    <option value="id">Indonesia</option>
+    </select>
+    </div>
+    <div>
+    <label id="lblIntensity">Motion intensity</label>
+    <div class="slider-wrap">
+    <input id="intensity" type="range" min="0" max="2" step="1" value="0" oninput="updateIntensityLabel(); generate();" />
+    <span id="intensityLabel">Subtle</span>
+    </div>
+    </div>
+    <div>
+    <label id="lblStructure">Structure</label>
+    <select id="structure" onchange="structureChanged()">
+    <option value="single" selected>Doodle</option>
+    <option value="grid3x3">Stickman</option>
+    </select>
+    </div>
+    </div>
 
-      <h1 id="title">Christmas Prompt Generator</h1>
-      <p id="subtitle" class="muted">Generate minimalist Christmas prompts as a 3×3 doodle grid or as a bold stickman single image. Includes poses, precise text placement, language options, and matching animation prompts.</p>
+    <h1 id="title">Christmas Doodle/Stickman Prompt Generator</h1>
+    <p id="subtitle" class="muted"></p>
 
-      <div>
-        <label id="lblPresets">Presets (single character)</label>
-        <div class="preset-grid" id="presets"></div>
-        <div class="row" style="margin-top:8px;">
-          <div class="col" style="flex:0 0 auto;">
-            <button class="btn secondary" onclick="randomPreset()" id="btnRandomPreset">Random Preset</button>
-          </div>
-          <div class="col" style="flex:0 0 auto;">
-            <button class="btn secondary" onclick="randomMix()" id="btnRandomMix">Random Mix</button>
-          </div>
-        </div>
-      </div>
+    <div>
+    <label id="lblPresets">Presets (single character)</label>
+    <div class="preset-grid" id="presets"></div>
+    <div class="row" style="margin-top:8px;">
+    <div class="col" style="flex:0 0 auto;">
+    <button class="btn secondary" onclick="randomPreset()" id="btnRandomPreset">Random Preset</button>
+    </div>
+    <div class="col" style="flex:0 0 auto;">
+    <button class="btn secondary" onclick="randomMix()" id="btnRandomMix">Random Mix</button>
+    </div>
+    </div>
+    </div>
 
-      <div class="row" style="margin-top:14px;">
-        <div class="col">
-          <label for="character" id="lblCharacter">Character</label>
-          <input id="character" type="text" placeholder="penguin with Santa hat" />
-        </div>
+    <div class="row" style="margin-top:14px;">
+    <div class="col">
+    <label for="character" id="lblCharacter">Character</label>
+    <input id="character" type="text" placeholder="penguin with Santa hat" />
+    </div>
 
-        <div class="col">
-          <label for="poseSelect" id="lblPose">Pose</label>
-          <select id="poseSelect" onchange="poseChanged()">
-            <option value="">Choose…</option>
-            <option>Standing upright</option>
-            <option>Looking down</option>
-            <option>Walking sideways</option>
-            <option>Squatting</option>
-            <option>Jumping</option>
-            <option>Other…</option>
-          </select>
-        </div>
-        <div class="col">
-          <label for="pose" id="lblPoseFree">Pose detail (if “Other…” or extra)</label>
-          <input id="pose" type="text" placeholder="e.g., holding a lantern, tiny bounce" />
-        </div>
+    <div class="col">
+    <label for="poseSelect" id="lblPose">Pose</label>
+    <select id="poseSelect" onchange="poseChanged()">
+    <option value="">Choose…</option>
+    <option>Standing upright</option>
+    <option>Looking down</option>
+    <option>Walking sideways</option>
+    <option>Squatting</option>
+    <option>Jumping</option>
+    <option>Other…</option>
+    </select>
+    </div>
+    <div class="col">
+    <label for="pose" id="lblPoseFree">Pose detail (if “Other…” or extra)</label>
+    <input id="pose" type="text" placeholder="e.g., holding a lantern, tiny bounce" />
+    </div>
 
-        <div class="col">
-          <label for="shot" id="lblShot">Framing</label>
-          <select id="shot">
-            <option value="centered on clean white background">Centered on white</option>
-            <option value="minimal scene with subtle ground line">Minimal scene, subtle ground line</option>
-            <option value="grid tile with ample white space">Grid-like tile</option>
-            <option value="tight crop, lots of white margin">Tight crop with margin</option>
-          </select>
-        </div>
-        <div class="col" style="max-width:200px;">
-          <label for="count" id="lblCount">How many characters</label>
-          <select id="count">
-            <option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option>
-          </select>
-        </div>
-      </div>
+    <div class="col">
+    <label for="shot" id="lblShot">Framing</label>
+    <select id="shot">
+    <option value="centered on clean white background">Centered on white</option>
+    <option value="minimal scene with subtle ground line">Minimal scene, subtle ground line</option>
+    <option value="grid tile with ample white space">Grid-like tile</option>
+    <option value="tight crop, lots of white margin">Tight crop with margin</option>
+    </select>
+    </div>
+    <div class="col" style="max-width:200px;">
+    <label for="count" id="lblCount">How many characters</label>
+    <select id="count">
+    <option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option>
+    </select>
+    </div>
+    </div>
 
-      <div class="row" style="margin-top:12px;">
-        <div class="col">
-          <label for="overlayText" id="lblOverlayText">Text on image (max 20 chars)</label>
-          <input id="overlayText" type="text" maxlength="20" placeholder='e.g., Merry Xmas' oninput="enforceTextLimit()" />
-        </div>
-        <div class="col">
-          <label for="overlayColor" id="lblOverlayColor">Text color</label>
-          <select id="overlayColor">
-            <option value="red">Red</option>
-            <option value="black">Black</option>
-            <option value="gray">Gray</option>
-            <option value="gold">Gold</option>
-          </select>
-        </div>
-        <div class="col">
-          <label for="overlayStyle" id="lblOverlayStyle">Text style</label>
-          <select id="overlayStyle">
-            <option value="handwritten doodle lettering">Handwritten doodle</option>
-            <option value="simple block caps lettering">Block caps</option>
-            <option value="ribbon tag label with lettering">Ribbon tag</option>
-            <option value="round stamp circle with lettering">Stamp circle</option>
-          </select>
-        </div>
-        <div class="col">
-          <label for="overlayPos" id="lblOverlayPos">Text position</label>
-          <select id="overlayPos">
-            <option>top-left corner</option>
-            <option>top-center</option>
-            <option>top-right corner</option>
-            <option>center-left</option>
-            <option selected>center</option>
-            <option>center-right</option>
-            <option>bottom-left corner</option>
-            <option>bottom-center</option>
-            <option>bottom-right corner</option>
-          </select>
-        </div>
-      </div>
+    <!-- Text overlay controls with precise placement -->
+    <div class="row" style="margin-top:12px;">
+    <div class="col">
+    <label for="overlayText" id="lblOverlayText">Text on image (max 20 chars)</label>
+    <input id="overlayText" type="text" maxlength="20" placeholder='e.g., Merry Xmas' oninput="enforceTextLimit()" />
+    </div>
+    <div class="col">
+    <label for="overlayColor" id="lblOverlayColor">Text color</label>
+    <select id="overlayColor">
+    <option value="red">Red</option>
+    <option value="black">Black</option>
+    <option value="gray">Gray</option>
+    <option value="gold">Gold</option>
+    </select>
+    </div>
+    <div class="col">
+    <label for="overlayStyle" id="lblOverlayStyle">Text style</label>
+    <select id="overlayStyle">
+    <option value="handwritten doodle lettering">Handwritten doodle</option>
+    <option value="simple block caps lettering">Block caps</option>
+    <option value="ribbon tag label with lettering">Ribbon tag</option>
+    <option value="round stamp circle with lettering">Stamp circle</option>
+    </select>
+    </div>
+    <div class="col">
+    <label for="overlayPos" id="lblOverlayPos">Text position</label>
+    <select id="overlayPos">
+    <option>top-left corner</option>
+    <option>top-center</option>
+    <option>top-right corner</option>
+    <option>center-left</option>
+    <option selected>center</option>
+    <option>center-right</option>
+    <option>bottom-left corner</option>
+    <option>bottom-center</option>
+    <option>bottom-right corner</option>
+    </select>
+    </div>
+    </div>
 
-      <div class="row" style="margin-top:12px;">
-        <div class="col">
-          <label for="extras" id="lblExtras">Optional festive props</label>
-          <input id="extras" type="text" placeholder="red scarf, Santa hat, tiny bells, ornaments" />
-        </div>
-        <div class="col">
-          <label for="negatives" id="lblNegatives">Negative cues (optional)</label>
-          <input id="negatives" type="text" placeholder="no shading, no background clutter" />
-        </div>
-        <div class="col" style="flex:0 0 auto;">
-          <button class="btn" onclick="generate()" id="btnGenerate">Generate</button>
-        </div>
-        <div class="col" style="flex:0 0 auto;">
-          <button class="btn secondary" onclick="copyText('output')" id="btnCopyImage">Copy image prompt</button>
-        </div>
-      </div>
+    <div class="row" style="margin-top:12px;">
+    <div class="col">
+    <label for="extras" id="lblExtras">Optional festive props</label>
+    <input id="extras" type="text" placeholder="red scarf, Santa hat, tiny bells, ornaments" />
+    </div>
+    <div class="col">
+    <label for="negatives" id="lblNegatives">Negative cues (optional)</label>
+    <input id="negatives" type="text" placeholder="no shading, no background clutter" />
+    </div>
+    <div class="col" style="flex:0 0 auto;">
+    <button class="btn" onclick="generate()" id="btnGenerate">Generate</button>
+    </div>
+    <div class="col" style="flex:0 0 auto;">
+    <button class="btn secondary" onclick="copyText('output')" id="btnCopyImage">Copy image prompt</button>
+    </div>
+    </div>
 
-      <div style="margin-top:16px;" class="grid">
-        <div>
-          <label id="lblStyleDial">Style dial (quick insert)</label>
-          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;">
-            <span class="pill" onclick="insertStyle('ultra minimal, clean linework')">Ultra minimal</span>
-            <span class="pill" onclick="insertStyle('whimsical doodle vibe')">Whimsical</span>
-            <span class="pill" onclick="insertStyle('childlike charm, cozy holiday feel')">Cozy</span>
-            <span class="pill" onclick="insertStyle('high-key white space')">High-key</span>
-          </div>
-        </div>
-        <div>
-          <label id="lblQualityHints">Quality hints (quick insert)</label>
-          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;">
-            <span class="pill" onclick="insertQuality('clean vector-like lines, crisp edges')">Crisp lines</span>
-            <span class="pill" onclick="insertQuality('balanced composition, centered subject')">Centered</span>
-            <span class="pill" onclick="insertQuality('consistent palette, limited colors')">Limited palette</span>
-          </div>
-        </div>
-      </div>
+    <div style="margin-top:16px;" class="grid">
+    <div>
+    <label id="lblStyleDial">Style dial (quick insert)</label>
+    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;">
+    <span class="pill" onclick="insertStyle('ultra minimal, clean linework')">Ultra minimal</span>
+    <span class="pill" onclick="insertStyle('whimsical doodle vibe')">Whimsical</span>
+    <span class="pill" onclick="insertStyle('childlike charm, cozy holiday feel')">Cozy</span>
+    <span class="pill" onclick="insertStyle('high-key white space')">High-key</span>
+    </div>
+    </div>
+    <div>
+    <label id="lblQualityHints">Quality hints (quick insert)</label>
+    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;">
+    <span class="pill" onclick="insertQuality('clean vector-like lines, crisp edges')">Crisp lines</span>
+    <span class="pill" onclick="insertQuality('balanced composition, centered subject')">Centered</span>
+    <span class="pill" onclick="insertQuality('consistent palette, limited colors')">Limited palette</span>
+    </div>
+    </div>
+    </div>
 
-      <div class="two-col" style="margin-top:16px;">
-        <div>
-          <label id="lblImagePrompt" for="output">Image prompt</label>
-          <textarea id="output" readonly></textarea>
-          <div class="small" id="paletteNote">Palette: red accents, black linework, white fill. No heavy shadows or gradients.</div>
-        </div>
-        <div>
-          <label id="lblAnimPrompt" for="anim">Animation prompt (auto-matching)</label>
-          <textarea id="anim"></textarea>
-          <div class="row" style="margin-top:6px;">
-            <div class="col" style="flex:0 0 auto;">
-              <button class="btn secondary" onclick="copyText('anim')" id="btnCopyAnim">Copy animation prompt</button>
-            </div>
-          </div>
-          <div class="small" id="animNote">5–8s seamless loop; motions respect the selected style/structure.</div>
-        </div>
-      </div>
+    <div class="two-col" style="margin-top:16px;">
+    <div>
+    <label id="lblImagePrompt" for="output">Image prompt</label>
+    <textarea id="output" readonly></textarea>
+    <div class="small" id="paletteNote">Palette: red accents, black linework, white fill. No heavy shadows or gradients.</div>
+    </div>
+    <div>
+    <label id="lblAnimPrompt" for="anim">Animation prompt (auto-matching)</label>
+    <textarea id="anim"></textarea>
+    <div class="row" style="margin-top:6px;">
+    <div class="col" style="flex:0 0 auto;">
+    <button class="btn secondary" onclick="copyText('anim')" id="btnCopyAnim">Copy animation prompt</button>
+    </div>
+    </div>
+    <div class="small" id="animNote">5–8s seamless loop; motions respect the grid if selected.</div>
+    </div>
+    </div>
 
-      <div style="margin-top:12px;">
-        <label id="lblShare">Shareable URL</label>
-        <div class="share">
-          <input id="shareurl" readonly />
-          <button class="btn secondary" onclick="copyShare()" id="btnCopyLink">Copy link</button>
-        </div>
-        <div class="small" id="shareNote">Link preloads your current settings.</div>
-      </div>
+    <div style="margin-top:12px;">
+    <label id="lblShare">Shareable URL</label>
+    <div class="share">
+    <input id="shareurl" readonly />
+    <button class="btn secondary" onclick="copyShare()" id="btnCopyLink">Copy link</button>
+    </div>
+    <div class="small" id="shareNote">Link preloads your current settings.</div>
+    </div>
     </div>
 
     <p class="small" style="margin:12px 4px;" id="tips">
-      Tip: Choose “Stickman (single image)” for bold stick figures on white; use 3×3 grid for the warm beige doodle tiles.
+    Tip: Choose 3×3 grid to mimic your reference. Preset + pose + precise text position gives consistent results.
     </p>
   </div>
 
 <script>
-/* i18n and logic shortened here for brevity in this message—this is the full file from my previous message.
-   Please scroll back to the previous assistant message and copy the entire HTML+JS content exactly as shown.
-*/
+/* i18n (EN/ID) – unchanged key names from earlier versions where possible */
+const I18N = {
+  en: {
+    title: "Christmas Doodle/Stickman Prompt Generator",
+    subtitle: "",
+    labels: {
+    language: "Language",
+    intensity: "Motion intensity",
+    presets: "Presets (single character)",
+    character: "Character",
+    pose: "Pose",
+    poseFree: "Pose detail (if “Other…” or extra)",
+    shot: "Framing",
+    count: "How many characters",
+    extras: "Optional festive props",
+    negatives: "Negative cues (optional)",
+    styleDial: "Style dial (quick insert)",
+    qualityHints: "Quality hints (quick insert)",
+    imagePrompt: "Image prompt",
+    animPrompt: "Animation prompt (auto-matching)",
+    share: "Shareable URL",
+    structure: "Structure",
+    overlayText: "Text on image (max 20 chars)",
+    overlayColor: "Text color",
+    overlayStyle: "Text style",
+    overlayPos: "Text position"
+    },
+    buttons: {
+    randomPreset: "Random Preset",
+    randomMix: "Random Mix",
+    generate: "Generate",
+    copyImage: "Copy image prompt",
+    copyAnim: "Copy animation prompt",
+    copyLink: "Copy link"
+    },
+    notes: {
+    palette: "Palette: red accents, black linework, white fill. No heavy shadows or gradients.",
+    anim: "5–8s seamless loop; motions respect the grid when enabled.",
+    share: "Link preloads your current settings.",
+    tips: "Tip: 3×3 grid + pose + precise text position yields consistent results."
+    },
+    intensity: ["Subtle","Medium","Lively"],
+    loopSpec: "5–8 second seamless loop, start and end frames match",
+    styleLock: [
+    "same minimalist Christmas doodle style as image",
+    "thin black outlines, red accents only, white fill",
+    "static camera, no zoom"
+    ],
+    disciplineBase: "keep motions tiny",
+    negatives: ["no heavy particles","no complex physics","no extra colors","no lighting changes","no shadows"],
+    output: "Output: lightweight 2D animation, hand-drawn look preserved."
+  },
+  id: {
+    title: "Generator Prompt Doodle Natal",
+    subtitle: "Meniru tampilan grid 3×3 Anda. Preset karakter tunggal, opsi pose, acak, posisi teks presisi, dan animasi serasi dalam gaya minimalis merah–putih–hitam dengan ubin krem hangat.",
+    labels: {
+    language: "Bahasa",
+    intensity: "Intensitas gerak",
+    presets: "Preset (satu karakter)",
+    character: "Karakter",
+    pose: "Pose",
+    poseFree: "Detail pose (jika “Lainnya…” atau tambahan)",
+    shot: "Pembingkaian",
+    count: "Jumlah karakter",
+    extras: "Properti meriah (opsional)",
+    negatives: "Kata negatif (opsional)",
+    styleDial: "Gaya (shortcut)",
+    qualityHints: "Kualitas (shortcut)",
+    imagePrompt: "Prompt gambar",
+    animPrompt: "Prompt animasi (otomatis cocok)",
+    share: "URL yang bisa dibagikan",
+    structure: "Struktur",
+    overlayText: "Teks pada gambar (maks 20 karakter)",
+    overlayColor: "Warna teks",
+    overlayStyle: "Gaya teks",
+    overlayPos: "Posisi teks"
+    },
+    buttons: {
+    randomPreset: "Preset Acak",
+    randomMix: "Campuran Acak",
+    generate: "Buat Prompt",
+    copyImage: "Salin prompt gambar",
+    copyAnim: "Salin prompt animasi",
+    copyLink: "Salin tautan"
+    },
+    notes: {
+    palette: "Palet: aksen merah, garis hitam, isi putih. Tanpa bayangan berat atau gradien.",
+    anim: "Loop 5–8 detik mulus; gerak menghormati grid bila aktif.",
+    share: "Tautan memuat pengaturan Anda.",
+    tips: "Tips: Grid 3×3 + pose + posisi teks presisi memberi hasil konsisten."
+    },
+    intensity: ["Lembut","Sedang","Lincah"],
+    loopSpec: "loop 5–8 detik mulus, bingkai awal dan akhir serasi",
+    styleLock: [
+    "gaya doodle Natal minimalis yang sama dengan gambar",
+    "garis tipis hitam, aksen merah saja, isi putih",
+    "kamera statis, tanpa zoom"
+    ],
+    disciplineBase: "jaga gerakan kecil",
+    negatives: ["tanpa partikel berat","tanpa fisika kompleks","tanpa warna tambahan","tanpa perubahan pencahayaan","tanpa bayangan"],
+    output: "Keluaran: animasi 2D ringan, tetap tampilan gambar tangan."
+  }
+};
+
+const BASE_STYLE = [
+  "minimal Christmas doodle illustration",
+  "thin black ink outlines, sketchy hand-drawn look",
+  "limited palette: bright red accents, black linework, white fill"
+];
+
+// Presets (single character)
+const PRESETS = [
+  {name:"Penguin",    character:"penguin with Santa hat",    pose:"Standing upright", shot:"centered on clean white background", extras:"red scarf"},
+  {name:"Reindeer",    character:"reindeer with oversized red nose",  pose:"Standing upright", shot:"minimal scene with subtle ground line", extras:"tiny bells"},
+  {name:"Gingerbread", character:"gingerbread person",    pose:"Walking sideways", shot:"grid tile with ample white space", extras:"red bow tie"},
+  {name:"Polar Bear",  character:"polar bear",    pose:"Looking down", shot:"centered on clean white background", extras:"red scarf and mittens"},
+  {name:"Tree",    character:"minimalist Christmas tree",    pose:"Standing upright", shot:"centered on clean white background", extras:"small red topper"},
+  {name:"Ornament",    character:"single hanging Christmas ornament", pose:"Standing upright", shot:"tight crop, lots of white margin", extras:"simple knot"},
+  {name:"Gift Box",    character:"gift box",    pose:"Standing upright", shot:"centered on clean white background", extras:"red ribbon and bow"},
+  {name:"Gnome",    character:"Christmas gnome",    pose:"Walking sideways", shot:"minimal scene with subtle ground line", extras:"striped hat"}
+];
+
+const MIX = {
+  characters: PRESETS.map(p => p.character),
+  poses: ["Standing upright","Looking down","Walking sideways","Squatting","Jumping"],
+  shots: ["centered on clean white background","minimal scene with subtle ground line","grid tile with ample white space","tight crop, lots of white margin"],
+  props: ["red scarf","Santa hat","red mittens","tiny bells","red ribbon and bow","small red ornaments","striped hat","little heart pin"],
+  texts: ["Merry Xmas","Ho Ho Ho","Joy","Peace","Love","Noel","Cheers"],
+  textPos: ["top-left corner","top-center","top-right corner","center-left","center","center-right","bottom-left corner","bottom-center","bottom-right corner"]
+};
+
+// Stickman and Doodle pose sets and presets
+const POSES_DOODLE = ["Standing upright","Looking down","Walking sideways","Squatting","Jumping","Other…"];
+const POSES_STICKMAN = [
+  "standing straight","waving one hand","running, one knee up","sitting cross‑legged",
+  "jumping with arms up","dancing, one arm akimbo","Other…"
+];
+
+const PRESETS_STICKMAN = [
+  {name:"Stickman Santa", character:"stickman wearing a tiny Santa hat", pose:"standing straight", shot:"centered on clean white background", extras:"small red scarf"},
+  {name:"Stickman Reindeer", character:"stickman with simple antlers headband", pose:"waving one hand", shot:"minimal scene with subtle ground line", extras:"tiny bells"},
+  {name:"Stickman Gift", character:"stickman holding a gift box", pose:"running, one knee up", shot:"tight crop, lots of white margin", extras:"red ribbon"},
+  {name:"Stickman Tree", character:"stickman decorating a small tree", pose:"sitting cross‑legged", shot:"centered on clean white background", extras:"tiny ornaments"}
+];
+
+function getCurrentPresetList(){
+  return $("structure").value === "grid3x3" ? PRESETS_STICKMAN : PRESETS;
+}
+function getCurrentPoseList(){
+  return $("structure").value === "grid3x3" ? POSES_STICKMAN : POSES_DOODLE;
+}
+
+function renderPresetsDynamic(){
+  const box = $("presets"); box.innerHTML = "";
+  getCurrentPresetList().forEach(p=>{
+    const btn = document.createElement("button");
+    btn.className = "preset"; btn.textContent = p.name;
+    btn.onclick = ()=>loadPreset(p);
+    box.appendChild(btn);
+  });
+}
+
+function populatePoseOptions(){
+  const select = $("poseSelect");
+  const poses = getCurrentPoseList();
+  select.innerHTML = ""; // rebuild options
+  const optDefault = document.createElement("option");
+  optDefault.value = ""; optDefault.textContent = "Choose…";
+  select.appendChild(optDefault);
+  poses.forEach(v=>{
+    const o = document.createElement("option");
+    o.value = v; o.textContent = v;
+    select.appendChild(o);
+  });
+  // update pose detail placeholder
+  $("pose").placeholder = $("structure").value === "grid3x3"
+    ? "e.g., small nod, micro arm wave"
+    : "e.g., holding a lantern, tiny bounce";
+}
+
+function structureChanged(){
+  renderPresetsDynamic();
+  populatePoseOptions();
+  // Load the first preset of the chosen set to update character/pose/shot
+  const first = getCurrentPresetList()[0];
+  if (first) {
+    loadPreset(first);
+  } else {
+    generate();
+  }
+}
+
+
+let CURRENT_LANG = "en";
+
+function $(id){ return document.getElementById(id); }
+function randomItem(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+function poseChanged(){
+  const sel = $("poseSelect").value;
+  if (sel && sel !== "Other…") {
+    $("pose").value = sel;
+  }
+}
+
+function structurePart(val){
+  if (val === "grid3x3") {
+    return "compose as a 3×3 grid of separate tiles; each tile shows a minimalist Christmas doodle of the subject; tiles use warm beige variations (#F3E2C7–#EAC392) with thin black ink outlines and red accents; keep consistent spacing, equal tile sizes, soft paper texture feel; no additional colors beyond red, black, white plus warm beige backgrounds";
+  }
+  return "single composition on clean white background";
+}
+
+function makePrompt({character, pose, shot, extras, negatives, count, styleExtra, qualityExtra, overlay, structure}) {
+  const subject = `${count} ${character}${count>1 ? ' characters' : ''}`;
+  const posePart = pose ? `, ${pose.trim()}` : "";
+  const shotPart = shot ? `, ${shot}` : "";
+  const extrasPart = extras ? `; festive props: ${extras.trim()}` : "";
+  const styleAdd = styleExtra.length ? `; style notes: ${styleExtra.join(", ")}` : "";
+  const qualityAdd = qualityExtra.length ? `; quality: ${qualityExtra.join(", ")}` : "";
+  const negativeBase = [
+    "no background clutter",
+    "no complex scenery",
+    "no gradients, no heavy shading",
+    "no realistic rendering, no 3D"
+  ];
+  if (structure === "grid3x3") negativeBase.push("no misaligned tiles, maintain equal spacing and margins");
+  if (negatives && negatives.trim()) negativeBase.push(negatives.trim());
+
+  let textPart = "";
+  if (overlay && overlay.text) {
+    textPart = `. include the text "${overlay.text}" in ${overlay.color} using ${overlay.style}, positioned at the ${overlay.pos}, small and crisp with ample whitespace`;
+  }
+
+  return [
+    `${subject}${posePart}${shotPart}`,
+    BASE_STYLE.join(", "),
+    structurePart(structure),
+    `accent: bright Christmas red (#e11d48)`,
+    `line weight: fine; doodle vibe; playful but tidy`,
+    `holiday theme only${extrasPart}${styleAdd}${qualityAdd}${textPart}`,
+    `negative: ${negativeBase.join(", ")}`
+  ].join(". ");
+}
+
+function intensitySpec(level){ return {degrees:[2,4,6][level], px:[1,2,3][level], hz:["0.6–0.9 Hz","0.9–1.2 Hz","1.2–1.6 Hz"][level]}; }
+
+function deriveAnimationMotifs(subject, count, level, structure){
+  const s = subject.toLowerCase();
+  const {degrees, px} = intensitySpec(level);
+  const motifs = [];
+  const generic = [
+    CURRENT_LANG==="en" ? "static camera, no parallax" : "kamera statis, tanpa parallax",
+    CURRENT_LANG==="en" ? "gentle 2D motion only, hand-drawn feel" : "gerak 2D lembut, nuansa gambar tangan"
+  ];
+  const groupStagger = count>1 ? (CURRENT_LANG==="en"?"stagger actions across characters":"gerakan diselingi antar karakter")
+    : (CURRENT_LANG==="en"?"single subtle action":"aksi tunggal yang halus");
+
+  if (s.includes("penguin")) motifs.push(`${groupStagger}: tiny blink; hat tip bob ~${px}px`);
+  else if (s.includes("reindeer")) motifs.push(`${groupStagger}: nose glow pulse; antlers sway ~${degrees}°`);
+  else if (s.includes("gingerbread")) motifs.push(`${groupStagger}: arm wiggle ~${degrees}°; scarf flutter ~${px}px`);
+  else if (s.includes("polar bear") || s.includes("bear")) motifs.push(`${groupStagger}: scarf tail sway ~${px}px; micro body bob ~${px}px`);
+  else if (s.includes("tree")) motifs.push(`ornaments bounce ~${px}px; topper twinkle; tree sway ~${degrees}°`);
+  else if (s.includes("ornament")) motifs.push(`pendulum dangle ~${degrees}°; small sparkle`);
+  else if (s.includes("gift") || s.includes("box")) motifs.push(`ribbon bow expand-contract ~${px}% ; tag flutter ~${px}px`);
+  else if (s.includes("gnome")) motifs.push(`${groupStagger}: hats bob ~${degrees}°; center gnome blink`);
+  else motifs.push(CURRENT_LANG==="en" ? "tiny bob and micro blink suited to the character" : "bob kecil dan kedipan mikro sesuai karakter");
+
+  motifs.push(CURRENT_LANG==="en"
+    ? "very sparse tiny red confetti/snowflake drift (1–2 elements)"
+    : "salju/konfeti merah kecil sangat jarang (1–2 elemen)");
+  if (structure==="grid3x3") motifs.push(CURRENT_LANG==="en" ? "keep each tile independent; no camera moves across tiles" : "setiap ubin independen; tidak ada gerak kamera melintasi ubin");
+  motifs.push(CURRENT_LANG==="en" ? "if text exists, keep it static and perfectly crisp" : "jika ada teks, biarkan statis dan tetap tajam");
+
+  return {motifs, generic};
+}
+
+function makeAnimationPrompt(imagePrompt, subject, count, level, structure){
+  const {motifs, generic} = deriveAnimationMotifs(subject, count, level, structure);
+  const intens = intensitySpec(level);
+  const t = I18N[CURRENT_LANG];
+  const motionDiscipline = [
+    `${t.disciplineBase}: ~${intens.degrees}° rotation or ~${intens.px}px translation`,
+    CURRENT_LANG==="en" ? `ease-in-out timing, low frequency (${intens.hz})` : `timing ease-in-out, frekuensi rendah (${intens.hz})`
+  ];
+  return [
+    CURRENT_LANG==="en" ? `Animation to match: ${subject} (${count} character${count>1?'s':''}).` : `Animasi yang cocok: ${subject} (${count} karakter).`,
+    t.styleLock.join(", ") + ".",
+    (CURRENT_LANG==="en" ? "Loop spec: " : "Spesifikasi loop: ") + t.loopSpec + ".",
+    (CURRENT_LANG==="en" ? "Motion motifs: " : "Motif gerak: ") + motifs.join("; ") + ".",
+    (CURRENT_LANG==="en" ? "Discipline: " : "Disiplin: ") + motionDiscipline.join(", ") + ".",
+    (CURRENT_LANG==="en" ? "General: " : "Umum: ") + generic.join(", ") + ".",
+    (CURRENT_LANG==="en" ? "Negative: " : "Negatif: ") + t.negatives.join(", ") + ".",
+    t.output
+  ].join(" ");
+}
+
+function renderPresets(){
+  const box = $("presets"); box.innerHTML = "";
+  PRESETS.forEach(p=>{
+    const btn = document.createElement("button");
+    btn.className = "preset"; btn.textContent = p.name;
+    btn.onclick = ()=>loadPreset(p);
+    box.appendChild(btn);
+  });
+}
+
+function loadPreset(p){
+  $("character").value = p.character;
+  $("poseSelect").value = p.pose || "";
+  $("pose").value = p.pose || "";
+  $("shot").value = p.shot || "centered on clean white background";
+  $("extras").value = p.extras || "";
+  generate();
+}
+
+function randomPreset(){
+  const list = getCurrentPresetList ? getCurrentPresetList() : PRESETS;
+  loadPreset(randomItem(list));
+}
+function randomMix(){
+  $("character").value = randomItem(MIX.characters);
+  const pose = randomItem(MIX.poses);
+  $("poseSelect").value = pose; $("pose").value = pose;
+  $("shot").value = randomItem(MIX.shots);
+  $("extras").value = randomItem(MIX.props);
+  $("count").value = String(1 + Math.floor(Math.random()*5));
+  if (Math.random() < 0.5) {
+    $("overlayText").value = randomItem(MIX.texts).slice(0,20);
+    $("overlayColor").value = randomItem(["red","black","gray","gold"]);
+    $("overlayStyle").value = randomItem([
+    "handwritten doodle lettering",
+    "simple block caps lettering",
+    "ribbon tag label with lettering",
+    "round stamp circle with lettering"
+    ]);
+    $("overlayPos").value = randomItem(MIX.textPos);
+  } else {
+    $("overlayText").value = "";
+  }
+  generate();
+}
+
+window.__styleExtra = [];
+window.__qualityExtra = [];
+function insertStyle(s){ window.__styleExtra.push(s); generate(); }
+function insertQuality(s){ window.__qualityExtra.push(s); generate(); }
+
+function makeImagePrompt(){
+  const character = $("character").value || "penguin with Santa hat";
+  const pose = $("pose").value;
+  const shot = $("shot").value;
+  const extras = $("extras").value;
+  const negatives = $("negatives").value;
+  const count = parseInt($("count").value, 10) || 1;
+  const structure = $("structure").value;
+
+  const overlayText = $("overlayText").value.trim();
+  const overlay = overlayText ? {
+    text: overlayText,
+    color: $("overlayColor").value,
+    style: $("overlayStyle").value,
+    pos: $("overlayPos").value
+  } : null;
+
+  return {
+    text: makePrompt({
+    character, pose, shot, extras, negatives, count,
+    styleExtra: window.__styleExtra || [],
+    qualityExtra: window.__qualityExtra || [],
+    overlay, structure
+    }),
+    subject: `${character}${pose?`, ${pose}`:''}`,
+    count, structure
+  };
+}
+
+function generate(){
+  const level = parseInt($("intensity").value, 10) || 0;
+  const {text, subject, count, structure} = makeImagePrompt();
+  $("output").value = text;
+  $("anim").value = makeAnimationPrompt(text, subject, count, level, structure);
+  updateShareURL();
+}
+
+function copyText(id){ const ta = $(id); ta.select(); ta.setSelectionRange(0, 9999); document.execCommand("copy"); }
+function copyShare(){ const el = $("shareurl"); el.select(); el.setSelectionRange(0, 9999); document.execCommand("copy"); }
+function enforceTextLimit(){ const v = $("overlayText").value; if (v.length>20) $("overlayText").value = v.slice(0,20); }
+
+function updateShareURL(){
+  const params = new URLSearchParams({
+    lang: CURRENT_LANG, inten: $("intensity").value, struct: $("structure").value,
+    c: $("character").value, p: $("pose").value, s: $("shot").value, e: $("extras").value, n: $("negatives").value, cnt: $("count").value,
+    st: (window.__styleExtra||[]).join("|"), q: (window.__qualityExtra||[]).join("|"),
+    txt: $("overlayText").value, tcol: $("overlayColor").value, tsty: $("overlayStyle").value, tpos: $("overlayPos").value
+  });
+  $("shareurl").value = location.origin + location.pathname + "?" + params.toString();
+}
+
+function loadFromQuery(){
+  const q = new URLSearchParams(location.search);
+  const get = k => q.get(k) || "";
+  if(q.size){
+    CURRENT_LANG = get("lang") || "en"; $("lang").value = CURRENT_LANG;
+    $("intensity").value = get("inten") || "0"; updateIntensityLabel();
+    $("structure").value = get("struct") || "grid3x3";
+    $("character").value = get("c"); $("pose").value = get("p");
+    $("poseSelect").value = MIX.poses.includes(get("p")) ? get("p") : "";
+    $("shot").value = get("s") || "centered on clean white background";
+    $("extras").value = get("e"); $("negatives").value = get("n");
+    $("count").value = get("cnt") || "3";
+    window.__styleExtra = get("st") ? get("st").split("|") : [];
+    window.__qualityExtra = get("q") ? get("q").split("|") : [];
+    $("overlayText").value = get("txt") || "";
+    $("overlayColor").value = get("tcol") || "red";
+    $("overlayStyle").value = get("tsty") || "handwritten doodle lettering";
+    $("overlayPos").value = get("tpos") || "center";
+  }
+}
+
+function applyLang(){
+  const t = I18N[CURRENT_LANG];
+  $("title").textContent = t.title; $("subtitle").textContent = t.subtitle;
+  $("lblLang").textContent = t.labels.language; $("lblIntensity").textContent = t.labels.intensity;
+  $("lblPresets").textContent = t.labels.presets; $("lblCharacter").textContent = t.labels.character;
+  $("lblPose").textContent = t.labels.pose; $("lblPoseFree").textContent = t.labels.poseFree;
+  $("lblShot").textContent = t.labels.shot; $("lblCount").textContent = t.labels.count;
+  $("lblExtras").textContent = t.labels.extras; $("lblNegatives").textContent = t.labels.negatives;
+  $("lblStyleDial").textContent = t.labels.styleDial; $("lblQualityHints").textContent = t.labels.qualityHints;
+  $("lblImagePrompt").textContent = t.labels.imagePrompt; $("lblAnimPrompt").textContent = t.labels.animPrompt;
+  $("lblShare").textContent = t.labels.share; $("lblStructure").textContent = t.labels.structure;
+  $("lblOverlayText").textContent = t.labels.overlayText; $("lblOverlayColor").textContent = t.labels.overlayColor;
+  $("lblOverlayStyle").textContent = t.labels.overlayStyle; $("lblOverlayPos").textContent = t.labels.overlayPos;
+
+  $("btnRandomPreset").textContent = t.buttons.randomPreset;
+  $("btnRandomMix").textContent = t.buttons.randomMix;
+  $("btnGenerate").textContent = t.buttons.generate;
+  $("btnCopyImage").textContent = t.buttons.copyImage;
+  $("btnCopyAnim").textContent = t.buttons.copyAnim;
+  $("btnCopyLink").textContent = t.buttons.copyLink;
+
+  $("paletteNote").textContent = t.notes.palette;
+  $("animNote").textContent = t.notes.anim;
+  $("shareNote").textContent = t.notes.share;
+  $("tips").textContent = t.notes.tips;
+
+  updateIntensityLabel();
+}
+
+function switchLang(){ CURRENT_LANG = $("lang").value; applyLang(); generate(); }
+function updateIntensityLabel(){ const lvl = parseInt($("intensity").value,10); $("intensityLabel").textContent = I18N[CURRENT_LANG].intensity[lvl]; }
+
+window.addEventListener("DOMContentLoaded", ()=>{
+  loadFromQuery(); applyLang(); structureChanged();
+});
 </script>
 </body>
 </html>
