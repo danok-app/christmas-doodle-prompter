@@ -52,9 +52,9 @@
     </div>
     <div>
     <label id="lblStructure">Structure</label>
-    <select id="structure" onchange="structureChanged()">
-    <option value="single" selected>Doodle</option>
-    <option value="grid3x3">Stickman</option>
+    <select id="structure" onchange="generate()">
+    <option value="single">Doodle</option>
+    <option value="grid3x3" selected>Stickman</option>
     </select>
     </div>
     </div>
@@ -279,7 +279,7 @@ const I18N = {
     output: "Output: lightweight 2D animation, hand-drawn look preserved."
   },
   id: {
-    title: "Generator Prompt Doodle Natal",
+    title: "Generator Prompt Doodle/Stickman Natal",
     subtitle: "Meniru tampilan grid 3×3 Anda. Preset karakter tunggal, opsi pose, acak, posisi teks presisi, dan animasi serasi dalam gaya minimalis merah–putih–hitam dengan ubin krem hangat.",
     labels: {
     language: "Bahasa",
@@ -356,68 +356,6 @@ const MIX = {
   texts: ["Merry Xmas","Ho Ho Ho","Joy","Peace","Love","Noel","Cheers"],
   textPos: ["top-left corner","top-center","top-right corner","center-left","center","center-right","bottom-left corner","bottom-center","bottom-right corner"]
 };
-
-// Stickman and Doodle pose sets and presets
-const POSES_DOODLE = ["Standing upright","Looking down","Walking sideways","Squatting","Jumping","Other…"];
-const POSES_STICKMAN = [
-  "standing straight","waving one hand","running, one knee up","sitting cross‑legged",
-  "jumping with arms up","dancing, one arm akimbo","Other…"
-];
-
-const PRESETS_STICKMAN = [
-  {name:"Stickman Santa", character:"stickman wearing a tiny Santa hat", pose:"standing straight", shot:"centered on clean white background", extras:"small red scarf"},
-  {name:"Stickman Reindeer", character:"stickman with simple antlers headband", pose:"waving one hand", shot:"minimal scene with subtle ground line", extras:"tiny bells"},
-  {name:"Stickman Gift", character:"stickman holding a gift box", pose:"running, one knee up", shot:"tight crop, lots of white margin", extras:"red ribbon"},
-  {name:"Stickman Tree", character:"stickman decorating a small tree", pose:"sitting cross‑legged", shot:"centered on clean white background", extras:"tiny ornaments"}
-];
-
-function getCurrentPresetList(){
-  return $("structure").value === "grid3x3" ? PRESETS_STICKMAN : PRESETS;
-}
-function getCurrentPoseList(){
-  return $("structure").value === "grid3x3" ? POSES_STICKMAN : POSES_DOODLE;
-}
-
-function renderPresetsDynamic(){
-  const box = $("presets"); box.innerHTML = "";
-  getCurrentPresetList().forEach(p=>{
-    const btn = document.createElement("button");
-    btn.className = "preset"; btn.textContent = p.name;
-    btn.onclick = ()=>loadPreset(p);
-    box.appendChild(btn);
-  });
-}
-
-function populatePoseOptions(){
-  const select = $("poseSelect");
-  const poses = getCurrentPoseList();
-  select.innerHTML = ""; // rebuild options
-  const optDefault = document.createElement("option");
-  optDefault.value = ""; optDefault.textContent = "Choose…";
-  select.appendChild(optDefault);
-  poses.forEach(v=>{
-    const o = document.createElement("option");
-    o.value = v; o.textContent = v;
-    select.appendChild(o);
-  });
-  // update pose detail placeholder
-  $("pose").placeholder = $("structure").value === "grid3x3"
-    ? "e.g., small nod, micro arm wave"
-    : "e.g., holding a lantern, tiny bounce";
-}
-
-function structureChanged(){
-  renderPresetsDynamic();
-  populatePoseOptions();
-  // Load the first preset of the chosen set to update character/pose/shot
-  const first = getCurrentPresetList()[0];
-  if (first) {
-    loadPreset(first);
-  } else {
-    generate();
-  }
-}
-
 
 let CURRENT_LANG = "en";
 
@@ -541,10 +479,7 @@ function loadPreset(p){
   generate();
 }
 
-function randomPreset(){
-  const list = getCurrentPresetList ? getCurrentPresetList() : PRESETS;
-  loadPreset(randomItem(list));
-}
+function randomPreset(){ loadPreset(randomItem(PRESETS)); }
 function randomMix(){
   $("character").value = randomItem(MIX.characters);
   const pose = randomItem(MIX.poses);
@@ -678,7 +613,7 @@ function switchLang(){ CURRENT_LANG = $("lang").value; applyLang(); generate(); 
 function updateIntensityLabel(){ const lvl = parseInt($("intensity").value,10); $("intensityLabel").textContent = I18N[CURRENT_LANG].intensity[lvl]; }
 
 window.addEventListener("DOMContentLoaded", ()=>{
-  loadFromQuery(); applyLang(); structureChanged();
+  renderPresets(); loadFromQuery(); applyLang(); generate();
 });
 </script>
 </body>
